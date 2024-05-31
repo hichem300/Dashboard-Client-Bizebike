@@ -1,0 +1,71 @@
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.6.1/dist/js/tabulator.min.js"></script>
+<script>
+  // Trigger table creation when the DOM is ready.
+  document.addEventListener("DOMContentLoaded", createTable);
+
+  /**
+   * Fetches data from Google Apps Script, creates a Tabulator table, 
+   * and configures table options including pagination, tooltips, and custom filters.
+   */
+  function createTable() {
+    google.script.run.withSuccessHandler((tableData) => {
+      console.log(tableData);
+      let table = new Tabulator("#example-table", {
+        data: tableData,
+        pagination: true,
+        paginationSize: 10,
+        paginationSizeSelector: true,
+        movableColumns: true,
+        responsiveLayout: "collapse",
+        layout: "fitColumns",
+        columnDefaults: { tooltip: true },
+        columns: [
+          { title: "Nom Pièce", field: "Nom Pièce", headerFilter: true, headerFilterPlaceholder: "Nom Pièce" },
+          { title: "Vélo", field: "Vélo", headerFilter: true, headerFilterPlaceholder: "Vélo" },
+          { title: "Heure de début", field: "Heure de début", headerFilter: true, headerFilterPlaceholder: "Heure de début", width: 400 },
+          { title: "Heure de fin", field: "Heure de fin", headerFilter: true, headerFilterPlaceholder: "Min. Heure de fin", headerFilterFunc: greaterThanFilter },
+          { title: "Client", field: "Client", headerFilter: true, headerFilterPlaceholder: "Client" },
+          { title: "ID Pièce", field: "ID Pièce", visible: true } // Assuming the ID Pièce field is included in the data
+        ],
+      });
+
+      // Apply filter to the table based on the ID Pièce field
+     let idToFilter = 'TRANSPACK'; // Replace with the actual ID Pièce you want to filter
+      table.setFilter("Client", "=", idToFilter); // Apply the filter to the ID Pièce column*/
+    }).getData();
+  }
+
+  /**
+   * Implements "greater than" filtering for Tabulator column headers.
+   *
+   * @param {string} headerValue Text entered in the filter input.
+   * @param {number|string} rowValue Current row's value for the column.
+   * @returns {boolean} True if rowValue > headerValue, otherwise false.
+   */
+  function greaterThanFilter(headerValue, rowValue) {
+    // Convert values to numbers for comparison (if necessary)
+    headerValue = parseFloat(headerValue);
+    rowValue = parseFloat(rowValue);
+
+    // Greater than logic
+    return rowValue > headerValue;
+  }
+
+  /**
+   * Implements "less than" filtering for Tabulator column headers.
+   *
+   * @param {string} headerValue Text entered in the filter input.
+   * @param {number|string} rowValue Current row's value for the column.
+   * @returns {boolean} True if rowValue < headerValue, otherwise false.
+   */
+  function lessThanFilter(headerValue, rowValue) {
+    // Convert values to numbers for comparison (if necessary)
+    headerValue = parseFloat(headerValue);
+    rowValue = parseFloat(rowValue);
+
+    // Less than logic
+    return rowValue < headerValue;
+  }
+</script>
+
+<div id="example-table"></div>

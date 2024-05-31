@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?!= HtmlService.createHtmlOutputFromFile('login-css').getContent(); ?>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+
+    <title>Acceuil</title>
+</head>
+
+<body>
+    <a style="display:none" id="myid" href="<?= pageURL(); ?>" target="_top">Link</a>
+    <!-- Register Section-->
+        <div class="container" id="container">
+            <div class="form-container sign-up">
+                <form>
+                    <h1>Créez votre compte</h1>
+                    <input type="text" placeholder="Nom" id="reg_uname" onchange="ClearText()">
+                    <input type="email" placeholder="Email" id="reg_uid" onchange="ClearText()">
+                    <input type="password" placeholder="Mot de Passe" id="reg_pass" onchange="ClearText()">
+                    <input type="password" placeholder="Rentrer votre Mot de Passe" id="reg_repass" onchange="ClearText()">
+                    <div id="RetMsgReg" class="alert alert-danger " style="display:none" role="alert"> </div>
+
+                    <div class="input-wrapper"> 
+                        <input type="text" placeholder="Votre Code OTP" onchange="ClearText()" id="reg_otp"> 
+                        <button style="font-size: 9px; position:absolute;" onclick="SendOTP(event)"> 
+                            Recevoir OTP  
+                        </button> 
+                    </div> 
+                    <button onclick="Register(event)">Créer mon compte</button>
+                    
+                </form>
+                <div id="RetMsgReg" class="alert alert-danger " style="display:none" role="alert"> </div>
+
+            </div>
+    <!-- End of Register Section-->
+
+    <!-- Login Section-->
+            <div class="form-container sign-in">
+                <form>
+                    <span class="material-symbols-outlined" style="height : -100px; font-size: 65px;">
+                        account_circle
+                    </span>
+                    <h1>Connectez-vous</h1>
+                    <div class="email-wrapper">
+                        <input type="email" id="uid" placeholder="Email" required onchange="ClearText()">
+                    </div>
+
+                    <div class="password-wrapper">
+                        <input type="password" id ="pass" require placeholder="Mot de passe" onchange="ClearText()">
+                        <span class="material-symbols-outlined"  id="eyeicon" style="height : -100px; font-size: 25px;">visibility</span> 
+                    </div>
+
+                    <div id="RetMsg" class="alert alert-danger " style="display:none" role="alert"> </div>
+
+                    <a href="#" onclick="ForgotPassword()">Mot de passe oublié ?</a>
+
+                    <button type="button" onclick="login()">Se connecter</button>
+                </form>
+            </div>
+    <!-- End of Login Section-->
+
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1>Rebonjour!</h1>
+                    <p>Vous avez dejà un compte?</p>
+                    <button class="hidden" id="login">Se connecter</button>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <h1>Bienvenue sur votre Dashboard d'interventions</h1>
+                    <p>Vous n’avez pas encore de compte ?</p>
+                    <button class="hidden" id="register">S'inscrire</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+      <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+
+    <script>
+        const eyeicon = document.getElementById('eyeicon');
+        const password = document.getElementById('pass');
+
+        eyeicon.onclick = function(){
+            if(password.type == "password"){
+                password.type = "text";
+                eyeicon.innerHTML = "visibility_off";
+            }else{
+                password.type = "password";
+                eyeicon.innerHTML = "visibility";
+            }
+        }
+
+      const container = document.getElementById('container');
+      const registerBtn = document.getElementById('register');
+      const loginBtn = document.getElementById('login');
+
+      registerBtn.addEventListener('click', () => {
+          container.classList.add("active");
+      });
+
+      loginBtn.addEventListener('click', () => {
+          container.classList.remove("active");
+      });
+
+     //REGISTER FUNCTIONS
+    function SendOTP(event) {
+    event.preventDefault();  // This stops the form from submitting
+    var unm = document.getElementById("reg_uname").value.trim();
+    var uid = document.getElementById("reg_uid").value.trim();
+
+    if (unm == "") {
+        RegReturnMsg("danger,Please Enter User Name...");
+        return;
+    }
+    if (uid == "") {
+        RegReturnMsg("danger,Please Enter Correct Email ID...");
+        return;
+    }
+
+    google.script.run.withSuccessHandler(RegReturnMsg).sendPassword(uid, unm);
+}
+
+
+function Register(event) {
+    if (event) {
+        event.preventDefault();  // This stops the form from submitting
+    }
+    
+    var unm = document.getElementById("reg_uname").value.trim();
+    var uid = document.getElementById("reg_uid").value.trim();
+    var pass = document.getElementById("reg_pass").value.trim();
+    var repass = document.getElementById("reg_repass").value.trim();
+    var otp = document.getElementById("reg_otp").value.trim();
+
+    if (pass !== repass) {
+        RegReturnMsg("danger,Password Not Matched...");
+        return;
+    }
+
+    google.script.run.withSuccessHandler(function(response) {
+        RegReturnMsg("success," + response);  // Assuming your Google Script returns a confirm message
+    }).CheckOTP(uid, pass, unm, otp);
+}
+
+    function RegReturnMsg(message) {
+    var parts = message.split(",");
+    var type = parts[0];
+    var text = parts.slice(1).join(",");  // This handles cases where the message itself contains commas
+
+    var alertBox = document.getElementById("RetMsgReg");
+    alertBox.className = "alert alert-" + type;  // Adjusts the class for styling
+    alertBox.textContent = text;
+    alertBox.style.display = "block";  // Makes the alert box visible
+
+    if (type === 'success') {
+        setTimeout(function(){  
+            document.getElementById("myid").click();  // Redirects if necessary, or handle as needed
+        }, 3000);  // 3 seconds delay
+    }
+}
+
+  function login() {
+    var username = document.getElementById("uid").value;
+    var password = document.getElementById("pass").value;
+    
+    google.script.run.withSuccessHandler(function(response) {
+    
+      if (response === "success") {
+      document.getElementById("myid").click();
+      } else {
+        $("#RetMsg").removeClass("alert-danger").removeClass("alert-success").addClass("alert-danger");
+        $("#RetMsg").html("Invalid User ID or Password");
+        $("#RetMsg").show();
+      }
+      }).loginUser(username, password);
+    }
+
+           /* function login() {
+            var username = document.getElementById("uid").value;
+            var password = document.getElementById("pass").value;
+
+            google.script.run.withSuccessHandler(function (response) {
+                if (response === "success") {
+                    document.getElementById("myid").click();
+                } else if (response === "no_client_id") {
+                    $("#LoginRetMsg").removeClass("alert-danger").removeClass("alert-success").addClass("alert-warning");
+                    $("#LoginRetMsg").html("NO CLIENT ID");
+                    $("#LoginRetMsg").show();
+                } else {
+                    $("#LoginRetMsg").removeClass("alert-warning").removeClass("alert-success").addClass("alert-danger");
+                    $("#LoginRetMsg").html("Invalid User ID or Password");
+                    $("#LoginRetMsg").show();
+                }
+            }).loginUser(username, password);
+        }*/
+
+     function ClearText() {
+            $('#RetMsg').html("");
+            $('#RetMsg').hide();
+            $('#RetMsgReg').html("");
+            $('#RetMsgReg').hide();
+        }
+
+    function ForgotPassword() {
+        var uid = document.getElementById("uid").value.trim();
+
+        if (uid == "" )
+        {
+            ShowReturnMsg("danger, Please Enter User ID");
+            return;
+        }
+
+        google.script.run.withSuccessHandler(ShowReturnMsg).forgotPass(uid);
+  }
+
+    function ShowReturnMsg(data)
+  {
+      let v = data.split(",");
+      let type=v[0];
+      $('#RetMsg').removeClass("alert-success").removeClass("alert-danger").addClass("alert-"+type);
+      $('#RetMsg').html(v[1]);
+      $('#RetMsg').show();
+  }
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQ5SNBFVJE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CQ5SNBFVJE');
+</script>
+</body>
+</html>

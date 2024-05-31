@@ -1,0 +1,16 @@
+<script>
+  
+    function logout(){
+            google.script.run.withSuccessHandler(AfterLogOut).logoutUser();
+        }
+
+        function AfterLogOut(){
+            document.getElementById("after-logout").click();
+        }
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-CQ5SNBFVJE');
+</script>
